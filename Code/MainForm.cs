@@ -24,9 +24,15 @@ namespace OpenKey
 
         private void pqbTextBox_TextChanged(object sender, EventArgs e)
         {
-            bool allow = AllowEncryption();
-            encryptionButton.Enabled = allow;
-            encryptionButton.BackColor = allow ? System.Drawing.Color.White : System.Drawing.Color.LightGray;
+            ciphertextOpenToolStripMenuItem.Enabled = AllowOpenCiphertext();
+
+            bool allowEncryption = AllowEncryption();
+            encryptionButton.Enabled = allowEncryption;
+            encryptionButton.BackColor = allowEncryption ? System.Drawing.Color.White : System.Drawing.Color.LightGray;
+        }
+        private bool AllowOpenCiphertext()
+        {
+            return pTextBox.Text.Trim().Length > 0 && qTextBox.Text.Trim().Length > 0 && bTextBox.Text.Trim().Length > 0;
         }
         private bool AllowEncryption()
         {
@@ -59,22 +65,47 @@ namespace OpenKey
         }
         private void ciphertextOpenToolStripMenuItem_Click(object sender, EventArgs e)
         {
+            string errorText = GetMistake();
+            if (errorText != "")
+            {
+                MessageBox.Show(errorText, "Некорректный ввод", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+
             if (ciphertextOpenFileDialog.ShowDialog() == DialogResult.OK)
             {
-                using (StreamReader reader = new StreamReader(ciphertextOpenFileDialog.FileName))
+                int size = 0;
+                BigInteger n = BigInteger.Parse(pTextBox.Text) * BigInteger.Parse(qTextBox.Text);
+                while (n > 0)
                 {
-                    string plaintextString = reader.ReadLine();
-                    plaintextString = plaintextString.Substring(0, plaintextString.Length - 1);
-                    try
+                    n /= 255;
+                    size++;
+                }
+
+                using (FileStream fs = new FileStream(ciphertextOpenFileDialog.FileName, FileMode.Open, FileAccess.Read))
+                {
+                    if (fs.Length % size != 0)
                     {
-                        Encryption.plaintext = Array.ConvertAll(plaintextString.Split(' '), BigInteger.Parse);
-                    }
-                    catch
-                    {
-                        MessageBox.Show("Увы что-то не так с массивом", "Некорректное содержимое", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                        MessageBox.Show("Увы длина файла не подходит для расшифровки", "Некорректное содержимое", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                         return;
                     }
-                    plaintextTextBox.Text = plaintextString;
+
+                    List<BigInteger> plaintextBytes = new List<BigInteger>();
+                    StringBuilder plaintextString = new StringBuilder();
+                    while (fs.Position < fs.Length)
+                    {
+                        BigInteger plainNumber = 0;
+                        BigInteger multiplier = 1;
+                        for (int i = 0; i < size; i++)
+                        {
+                            plainNumber += fs.ReadByte() * multiplier;
+                            multiplier *= 255;
+                        }                       
+                        plaintextBytes.Add(plainNumber);
+                        plaintextString.Append(plainNumber.ToString() + " ");
+                    }
+                    Encryption.plaintext = plaintextBytes.ToArray();
+                    plaintextTextBox.Text = plaintextString.ToString();
                 }
 
                 Encryption.ciphertext = null;
@@ -108,14 +139,30 @@ namespace OpenKey
         {
             if (ciphertextSaveFileDialog.ShowDialog() == DialogResult.OK)
             {
-                using (StreamWriter writer = new StreamWriter(ciphertextSaveFileDialog.FileName))
+                int size = 0;
+                BigInteger n = Encryption.p * Encryption.q;
+                while (n > 0)
                 {
-                    writer.Write(BackEnd.Convert.BigIntegersToString(Encryption.ciphertext));
+                    n /= 255;
+                    size++;
+                }
+
+                using (FileStream fs = new FileStream(ciphertextSaveFileDialog.FileName, FileMode.Truncate, FileAccess.Write))
+                {
+                    for (int i = 0; i < Encryption.ciphertext.Length; i++)
+                    {
+                        BigInteger cipherNumber = Encryption.ciphertext[i];
+                        for (int j = 0; j < size; j++)
+                        {                          
+                            fs.WriteByte((byte)(cipherNumber % 255));
+                            cipherNumber /= 255;
+                        }
+                    }
                 }
             }
         }
 
-        private async void encryptionButton_Click(object sender, EventArgs e)
+        private void encryptionButton_Click(object sender, EventArgs e)
         {
             string errorText = GetMistake();
             if (errorText != "")
@@ -130,19 +177,20 @@ namespace OpenKey
 
             if (encryptRadioButton.Checked)
             {
-                await Task.Run(() => Encryption.EncryptAsync());
+                Encryption.Encrypt();
                 plaintextSaveToolStripMenuItem.Enabled = false;
                 ciphertextSaveToolStripMenuItem.Enabled = true;
             } 
             else
             {
-                await Task.Run(() => Encryption.DecryptAsync());
+                Encryption.Decrypt();
                 plaintextSaveToolStripMenuItem.Enabled = true;
                 ciphertextSaveToolStripMenuItem.Enabled = false;
             }
 
             ciphertextTextBox.Text = BackEnd.Convert.BigIntegersToString(Encryption.ciphertext);           
         }
+
         private string GetMistake()
         {
             string errorText = "";
@@ -157,10 +205,6 @@ namespace OpenKey
             {
                 errorText += "Число p составное!" + Environment.NewLine;
             }
-            if (p <= 3)
-            {
-                errorText += "Число p меньше или равно 3!" + Environment.NewLine;
-            }
             if (p % 4 != 3)
             {
                 errorText += "Число p при делении на 4 дает остаток не 3!" + Environment.NewLine;
@@ -169,17 +213,13 @@ namespace OpenKey
             {
                 errorText += "Число q составное!" + Environment.NewLine;
             }
-            if (q <= 3511)
-            {
-                errorText += "Число q меньше или равно 3511!" + Environment.NewLine;
-            }
             if (q % 4 != 3)
             {
                 errorText += "Число q при делении на 4 дает остаток не 3!" + Environment.NewLine;
             }
-            if (b < 1 || b > 10532)
+            if (b >= p * q)
             {
-                errorText += "Число b не принадлежит диапазону от 1 до 10532" + Environment.NewLine;
+                errorText += "Число b должно быть меньше p * q!" + Environment.NewLine;
             }
 
             return errorText;

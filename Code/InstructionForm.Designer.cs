@@ -40,9 +40,9 @@
             this.pLabel.ForeColor = System.Drawing.SystemColors.ButtonHighlight;
             this.pLabel.Location = new System.Drawing.Point(12, 24);
             this.pLabel.Name = "pLabel";
-            this.pLabel.Size = new System.Drawing.Size(683, 29);
+            this.pLabel.Size = new System.Drawing.Size(565, 29);
             this.pLabel.TabIndex = 0;
-            this.pLabel.Text = "1. p — простое число, больше 3, при делении на 4 остаток 3.";
+            this.pLabel.Text = "1. p — простое число, при делении на 4 остаток 3.";
             // 
             // qLabel
             // 
@@ -51,9 +51,9 @@
             this.qLabel.ForeColor = System.Drawing.SystemColors.ButtonHighlight;
             this.qLabel.Location = new System.Drawing.Point(12, 67);
             this.qLabel.Name = "qLabel";
-            this.qLabel.Size = new System.Drawing.Size(722, 29);
+            this.qLabel.Size = new System.Drawing.Size(565, 29);
             this.qLabel.TabIndex = 1;
-            this.qLabel.Text = "2. q — простое число, больше 3511, при делении на 4 остаток 3.";
+            this.qLabel.Text = "2. q — простое число, при делении на 4 остаток 3.";
             // 
             // bLabel
             // 
@@ -62,16 +62,16 @@
             this.bLabel.ForeColor = System.Drawing.SystemColors.ButtonHighlight;
             this.bLabel.Location = new System.Drawing.Point(12, 110);
             this.bLabel.Name = "bLabel";
-            this.bLabel.Size = new System.Drawing.Size(729, 29);
+            this.bLabel.Size = new System.Drawing.Size(455, 29);
             this.bLabel.TabIndex = 2;
-            this.bLabel.Text = "3. b — натуральное число, меньше p * q, диапазон от 1 до 10532.";
+            this.bLabel.Text = "3. b — натуральное число, меньше p * q.";
             // 
             // InstructionForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(128)))), ((int)(((byte)(0)))));
-            this.ClientSize = new System.Drawing.Size(813, 167);
+            this.ClientSize = new System.Drawing.Size(646, 167);
             this.Controls.Add(this.bLabel);
             this.Controls.Add(this.qLabel);
             this.Controls.Add(this.pLabel);

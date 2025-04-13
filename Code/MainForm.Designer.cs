@@ -73,7 +73,7 @@
             this.pTextBox.Name = "pTextBox";
             this.pTextBox.Size = new System.Drawing.Size(698, 34);
             this.pTextBox.TabIndex = 1;
-            this.pTextBox.Text = "11";
+            this.pTextBox.Text = "3511";
             this.pTextBox.TextChanged += new System.EventHandler(this.pqbTextBox_TextChanged);
             // 
             // encryptionButton
@@ -129,7 +129,7 @@
             this.bTextBox.Name = "bTextBox";
             this.bTextBox.Size = new System.Drawing.Size(698, 34);
             this.bTextBox.TabIndex = 6;
-            this.bTextBox.Text = "173";
+            this.bTextBox.Text = "11000000";
             this.bTextBox.TextChanged += new System.EventHandler(this.pqbTextBox_TextChanged);
             // 
             // menuStrip
